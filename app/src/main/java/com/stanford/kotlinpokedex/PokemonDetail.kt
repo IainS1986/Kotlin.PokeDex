@@ -16,6 +16,7 @@ import com.stanford.kotlinpokedex.Adapter.PokemonEvolutionAdapter
 import com.stanford.kotlinpokedex.Adapter.PokemonTypeAdapter
 import com.stanford.kotlinpokedex.Common.Common
 import com.stanford.kotlinpokedex.Model.Pokemon
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -40,6 +41,8 @@ class PokemonDetail : Fragment() {
     lateinit var recycler_prev_evolution:RecyclerView
     lateinit var recycler_next_evolution:RecyclerView
 
+    public var pokemon : Pokemon? = null
+
     companion object{
         internal var instance:PokemonDetail?=null
 
@@ -47,6 +50,10 @@ class PokemonDetail : Fragment() {
             if(instance == null)
                 instance = PokemonDetail()
             return instance!!
+        }
+
+        fun getNewInstance(): PokemonDetail{
+            return PokemonDetail()
         }
     }
 
@@ -57,7 +64,6 @@ class PokemonDetail : Fragment() {
         // Inflate the layout for this fragment
         var itemView: View = inflater.inflate(R.layout.fragment_pokemon_detail, container, false)
 
-        val pokemon: Pokemon?
         if (arguments!!.getString("num") == null)
             pokemon = Common.pokemonList[arguments!!.getInt("position")]
         else
@@ -115,6 +121,4 @@ class PokemonDetail : Fragment() {
             recycler_next_evolution.adapter = nextEvolutionAdapter
         }
     }
-
-
 }

@@ -5,10 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.os.PersistableBundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.stanford.kotlinpokedex.Common.Common
@@ -26,16 +28,17 @@ class MainActivity : AppCompatActivity() {
                 supportActionBar!!.setDisplayShowHomeEnabled(true)
 
                 //Replace Fragment
-                val detailFragment = PokemonDetail.getInstance()
+                val detailFragment = PokemonDetail.getNewInstance()
                 val position = intent.getIntExtra("position", -1)
+
                 val bundle = Bundle()
                 bundle.putInt("position", position)
                 detailFragment.arguments = bundle
 
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.replace(R.id.list_pokemon_fragment, detailFragment)
+                fragmentTransaction.replace(R.id.list_pokemon_fragment, detailFragment, "detail")
                 fragmentTransaction.addToBackStack("detail")
-                fragmentTransaction.commit()
+                fragmentTransaction.commitAllowingStateLoss()
 
                 //Set pokemon name for toolbar
                 val pokemon = Common.pokemonList[position]
@@ -48,18 +51,17 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(p0: Context?, intent: Intent?) {
             if(intent!!.action!!.toString() == Common.KEY_NUM_EVOLUTION) {
                 //Replace Fragment
-                val detailFragment = PokemonDetail.getInstance()
-                val bundle = Bundle()
+                val detailFragment = PokemonDetail.getNewInstance()
                 val num = intent.getStringExtra("num")
 
+                val bundle = Bundle()
                 bundle.putString("num", num)
                 detailFragment.arguments = bundle
 
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.remove(detailFragment)
-                fragmentTransaction.replace(R.id.list_pokemon_fragment, detailFragment)
+                fragmentTransaction.replace(R.id.list_pokemon_fragment, detailFragment, "detail")
                 fragmentTransaction.addToBackStack("detail")
-                fragmentTransaction.commit()
+                fragmentTransaction.commitAllowingStateLoss()
 
                 //Set pokemon name for toolbar
                 val pokemon = Common.findPokemonByNum(num)
@@ -97,5 +99,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return true
+    }
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 1)
+        {
+            supportFragmentManager.popBackStackImmediate()
+
+            var fragment = supportFragmentManager.findFragmentByTag("detail")
+            if (fragment is PokemonDetail)
+            {
+                toolbar.title = fragment.pokemon!!.name
+            }
+        }
+        else
+        {
+            toolbar.title = "POKEMON LIST"
+            supportActionBar!!.setDisplayShowHomeEnabled(false)
+            supportActionBar!!.setDisplayHomeAsUpEnabled(false)
+
+            super.onBackPressed()
+        }
     }
 }
