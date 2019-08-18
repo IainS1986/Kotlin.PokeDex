@@ -33,7 +33,16 @@ object Common {
         }
     }
 
+    fun findPokemonByType(type: String): List<Pokemon> {
+        var result = ArrayList<Pokemon>()
+        for (pokemon in pokemonList)
+            if (pokemon.type!!.contains(type))
+                result.add(pokemon)
+        return result
+    }
+
     var pokemonList:List<Pokemon> = ArrayList()
     val KEY_ENABLE_HOME = "position"
     val KEY_NUM_EVOLUTION = "evolution"
+    val KEY_POKEMON_TYPE = "type"
 }

@@ -1,10 +1,9 @@
 package com.stanford.kotlinpokedex
 
-
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.inputmethodservice.InputMethodService
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -20,42 +19,31 @@ import com.stanford.kotlinpokedex.Adapter.PokemonListAdapter
 import com.stanford.kotlinpokedex.Common.Common
 import com.stanford.kotlinpokedex.Common.ItemOffsetDecoration
 import com.stanford.kotlinpokedex.Model.Pokemon
-import com.stanford.kotlinpokedex.Retrofit.IPokemonList
-import com.stanford.kotlinpokedex.Retrofit.RetrofitClient
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_pokemon_list.*
 
+class PokemonType : Fragment() {
 
-class PokemonList : Fragment() {
-
-    internal var compositeDisposable = CompositeDisposable()
-    internal var iPokemonList:IPokemonList
     internal var last_suggest:MutableList<String> = ArrayList()
 
-    internal lateinit var recycler_view:RecyclerView
-    internal lateinit var adapter:PokemonListAdapter
-    internal lateinit var search_adapter:PokemonListAdapter
-    internal lateinit var search_bar:MaterialSearchBar
+    internal lateinit var recycler_view: RecyclerView
+    internal lateinit var adapter: PokemonListAdapter
+    internal lateinit var search_adapter: PokemonListAdapter
+    internal lateinit var search_bar: MaterialSearchBar
+
+    internal lateinit var typeList:List<Pokemon>
 
     companion object{
-        internal var instance:PokemonList?=null
+        internal var instance:PokemonType?=null
 
-        fun getInstance(): PokemonList{
+        fun getInstance(): PokemonType{
             if(instance == null)
-                instance = PokemonList()
+                instance = PokemonType()
             return instance!!
         }
 
-        fun getNewInstance(): PokemonList{
-            return PokemonList()
+        fun getNewInstance(): PokemonType{
+            return PokemonType()
         }
-    }
-
-    init {
-        val retrofit = RetrofitClient.instance
-        iPokemonList = retrofit.create(IPokemonList::class.java)
     }
 
     override fun onCreateView(
@@ -63,7 +51,7 @@ class PokemonList : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val itemView = inflater.inflate(R.layout.fragment_pokemon_list, container, false)
+        val itemView = inflater.inflate(R.layout.fragment_pokemon_type, container, false)
 
         recycler_view = itemView.findViewById(R.id.pokemon_recyclerview) as RecyclerView
         recycler_view.setHasFixedSize(true)
@@ -76,7 +64,7 @@ class PokemonList : Fragment() {
         search_bar = itemView.findViewById(R.id.search_bar) as MaterialSearchBar
         search_bar.setHint("Enter Pokemon Name")
         search_bar.setCardViewElevation(10)
-        search_bar.addTextChangeListener(object: TextWatcher{
+        search_bar.addTextChangeListener(object: TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
             }
 
@@ -107,16 +95,35 @@ class PokemonList : Fragment() {
 
         })
 
-        fetchData()
+        if (arguments != null)
+        {
+            var type = arguments!!.getString("type")
+            if (type != null)
+            {
+                typeList = Common.findPokemonByType(type)
+                adapter = PokemonListAdapter(activity!!, typeList)
+                recycler_view.adapter = adapter
+
+                loadSuggest()
+            }
+        }
 
         return itemView
     }
 
+    private fun loadSuggest() {
+        last_suggest.clear()
+        if (typeList.size > 0)
+            for (pokemon in typeList)
+                last_suggest.add(pokemon.name!!)
+        search_bar!!.lastSuggestions = last_suggest
+    }
+
     @SuppressLint("ServiceCast")
     private fun startSearch(text: String) {
-        if (Common.pokemonList.size > 0) {
+        if (typeList.size > 0) {
             val result = ArrayList<Pokemon>()
-            for (pokemon in Common.pokemonList)
+            for (pokemon in typeList)
                 if (pokemon.name!!.toLowerCase().contains(text.toLowerCase()))
                     result.add(pokemon)
             search_adapter = PokemonListAdapter(activity!!, result)
@@ -125,25 +132,6 @@ class PokemonList : Fragment() {
             hideKeyboard()
         }
     }
-
-    private fun fetchData(){
-        compositeDisposable.add(iPokemonList.listPokemon
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe{ pokemonDex ->
-                Common.pokemonList = pokemonDex.pokemon!!
-                adapter = PokemonListAdapter(activity!!, Common.pokemonList)
-                recycler_view.adapter = adapter
-
-                last_suggest.clear()
-                for (pokemon in Common.pokemonList)
-                    last_suggest.add(pokemon.name!!)
-                search_bar.visibility = View.VISIBLE
-                search_bar.lastSuggestions = last_suggest
-            }
-        );
-    }
-
 
     fun Fragment.hideKeyboard() {
         view?.let { activity?.hideKeyboard(it) }

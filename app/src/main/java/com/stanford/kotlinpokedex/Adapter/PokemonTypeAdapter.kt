@@ -1,11 +1,13 @@
 package com.stanford.kotlinpokedex.Adapter
 
 import android.content.Context
+import android.content.Intent
 import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.RecyclerView
 import com.robertlevonyan.views.chip.Chip
 import com.stanford.kotlinpokedex.Common.Common
@@ -35,7 +37,11 @@ class PokemonTypeAdapter(internal var context: Context, internal var typeList:Li
 
         init {
             chip = itemView.findViewById(R.id.chip) as Chip
-            chip.setOnChipClickListener { Toast.makeText(context, "Clicked", Toast.LENGTH_LONG).show() }
+            chip.setOnChipClickListener {
+
+                LocalBroadcastManager.getInstance(context)
+                    .sendBroadcast(Intent(Common.KEY_POKEMON_TYPE).putExtra("type", typeList[adapterPosition]))
+            }
         }
     }
 }

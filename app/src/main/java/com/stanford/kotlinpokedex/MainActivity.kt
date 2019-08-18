@@ -22,6 +22,31 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     //Create Broadcast handle
+    private val showPokemonType = object:BroadcastReceiver() {
+        override fun onReceive(p0: Context?, intent: Intent?) {
+            if(intent!!.action!!.toString() == Common.KEY_POKEMON_TYPE) {
+
+                //Replace Fragment
+                val pokemonType = PokemonType.getNewInstance()
+                val type = intent.getStringExtra("type")
+
+                val bundle = Bundle()
+                bundle.putString("type", type)
+                pokemonType.arguments = bundle
+
+                supportFragmentManager.popBackStack(0, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
+                val fragmentTransaction = supportFragmentManager.beginTransaction()
+                fragmentTransaction.replace(R.id.list_pokemon_fragment, pokemonType, "type")
+                fragmentTransaction.addToBackStack("type")
+                fragmentTransaction.commitAllowingStateLoss()
+
+                //Set pokemon name for toolbar
+                toolbar.title = "POKEMON TYPE " + type.toUpperCase()
+            }
+        }
+    }
+
     private val showDetail = object:BroadcastReceiver() {
         override fun onReceive(p0: Context?, intent: Intent?) {
             if(intent!!.action!!.toString() == Common.KEY_ENABLE_HOME) {
@@ -85,6 +110,9 @@ class MainActivity : AppCompatActivity() {
 
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(showEvolution, IntentFilter(Common.KEY_NUM_EVOLUTION))
+
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(showPokemonType, IntentFilter(Common.KEY_POKEMON_TYPE))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -95,6 +123,12 @@ class MainActivity : AppCompatActivity() {
 
                 //Clear all fragment in stack with name 'detail'
                 supportFragmentManager.popBackStack("detail", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                supportFragmentManager.popBackStack("type", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
+                var pokemonList = PokemonList.getNewInstance()
+                var fragmentTransaction = supportFragmentManager.beginTransaction()
+                fragmentTransaction.replace(R.id.list_pokemon_fragment, pokemonList)
+                fragmentTransaction.commitAllowingStateLoss()
 
                 supportActionBar!!.setDisplayShowHomeEnabled(false)
                 supportActionBar!!.setDisplayHomeAsUpEnabled(false)
