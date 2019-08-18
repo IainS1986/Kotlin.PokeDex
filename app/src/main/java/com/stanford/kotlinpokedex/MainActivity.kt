@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
 import android.os.PersistableBundle
 import com.google.android.material.snackbar.Snackbar
@@ -29,10 +30,10 @@ class MainActivity : AppCompatActivity() {
 
                 //Replace Fragment
                 val detailFragment = PokemonDetail.getNewInstance()
-                val position = intent.getIntExtra("position", -1)
+                val num = intent.getStringExtra("num")
 
                 val bundle = Bundle()
-                bundle.putInt("position", position)
+                bundle.putString("num", num)
                 detailFragment.arguments = bundle
 
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -41,8 +42,8 @@ class MainActivity : AppCompatActivity() {
                 fragmentTransaction.commitAllowingStateLoss()
 
                 //Set pokemon name for toolbar
-                val pokemon = Common.pokemonList[position]
-                toolbar.title = pokemon.name
+                val pokemon = Common.findPokemonByNum(num)
+                toolbar.title = pokemon!!.name
             }
         }
     }
@@ -75,6 +76,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         toolbar.setTitle("POKEMON LIST")
+        toolbar.setTitleTextColor(Color.WHITE)
         setSupportActionBar(toolbar)
 
         //Register broadcast

@@ -41,7 +41,7 @@ class PokemonDetail : Fragment() {
     lateinit var recycler_prev_evolution:RecyclerView
     lateinit var recycler_next_evolution:RecyclerView
 
-    public var pokemon : Pokemon? = null
+    var pokemon : Pokemon? = null
 
     companion object{
         internal var instance:PokemonDetail?=null
@@ -64,10 +64,7 @@ class PokemonDetail : Fragment() {
         // Inflate the layout for this fragment
         var itemView: View = inflater.inflate(R.layout.fragment_pokemon_detail, container, false)
 
-        if (arguments!!.getString("num") == null)
-            pokemon = Common.pokemonList[arguments!!.getInt("position")]
-        else
-            pokemon = Common.findPokemonByNum(arguments!!.getString("num"))
+        pokemon = Common.findPokemonByNum(arguments!!.getString("num"))
 
         pokemon_img = itemView.findViewById(R.id.pokemon_image) as ImageView
         pokemon_name = itemView.findViewById(R.id.name) as TextView

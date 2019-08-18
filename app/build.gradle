@@ -49,4 +49,7 @@ dependencies {
 
     //Clip
     implementation 'com.robertlevonyan.view:MaterialChipView:1.2.4'
+
+    //Search Bar library
+    implementation 'com.github.mancj:MaterialSearchBar:0.8.2'
 }
